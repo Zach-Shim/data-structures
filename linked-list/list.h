@@ -28,7 +28,7 @@ using namespace std;
 //   -- Insert Function:
 //    - Allocates memory for a Node, ptr to the data is passed in.
 //    - Allocating memory and setting data is the responsibility of the
-//      caller.
+        caller.
 //   -- Intersect Function:
 //    - At termination of the function, the two parameter lists are unchanged
 //      unless one is also the current object.
@@ -56,29 +56,26 @@ class List {
 }
 
 public:
-   List();                              // default constructor
-   ~List();                             // destructor
-   List(const List<T>&);                // copy constructor
+   List();                               // default constructor
+   ~List();                              // destructor
+   List(const List<T>&);                 // copy constructor
    
-   void makeEmpty();                    // deletes the current List
+   // operator overloads
+   const List<T>& operator=(const List<T>&);  // =operator overload
+   bool operator==(const List<T>&);            // ==operator overload
+   bool operator!=(const List<T>&);            // !=operator overload
+   
    void buildList(ifstream&);            // build a List from datafile
 
-   void merge(List<T>&, List<T>&);
+   //void merge(List<T>&, List<T>&);
    void intersect(const List<T>&, const List<T>&);
    
    bool insert(T*);                      // insert one Node into List
    bool isEmpty() const;                 // is list empty?
-   bool retrieve(const T&, T*&) const;   // retrieves a Node from the List
-   bool remove(const T&, T*&);           // removes an Node form the List
+   //bool retrieve(const T&, T*&) const;   // retrieves a Node from the List
+   //bool remove(const T&, T*&);           // removes an Node form the List
+   void makeEmpty();             // deletes the current List
 
-   void moveToEnd(const T& target);
-   void removeEveryOther();
-   void printBackwards() const;
-   
-   // operator overloads
-   const List<T>& operator=(const List<T>&) const;  // =operator overload
-   bool operator==(const List<T>&) const;           // ==operator overload
-   bool operator!=(const List<T>&) const;           // !=operator overload
 
 private:
    void copy(const List<T>&);    // copies the current list
@@ -88,8 +85,6 @@ private:
    };
 
    Node* head;                   // pointer to first node in list
-   
-   void printBackwardsHelper(Node*) const;
 };
 
 
@@ -122,7 +117,7 @@ List<T>::~List() {
 // operator=
 // copies a list into the current list
 template <typename T>
-const List<T>& List<T>::operator=(const List<T>& right) const {
+const List<T>& List<T>::operator=(const List<T>& right) {
    if(this != &right) {          // if current list is same as argument
       makeEmpty();
       copy(right);
@@ -280,7 +275,7 @@ void List<T>::buildList(ifstream& infile) {
 // operator==
 // finds if two lists are equal
 template <typename T>
-bool List<T>::operator==(const List<T>& right) const {
+bool List<T>::operator==(const List<T>& right) {
    // if the current object is same as right
    if(this == &right) {
       return true;
@@ -315,11 +310,11 @@ bool List<T>::operator==(const List<T>& right) const {
 // operator!=
 // utilizes definition of == to find if two lists are not equal
 template <typename T>
-bool List<T>::operator!=(const List<T>& right) const {
+bool List<T>::operator!=(const List<T>& right) {
    return !(*this == right);
 }
 
-
+/*
 //----------------------------------------------------------------------------
 // retrieve
 // retrieves a data object from the linked list
@@ -333,8 +328,8 @@ bool List<T>::retrieve(const T& target, T*& p) const {
    Node* current = head;
    
    while(current != nullptr) {
-      if(*current->data == target) {      // if target is found
-         p = current->data;               // assign object T to current data
+      if(*current->data == target) {     // if target is found
+         p = current->data;              // assign object T to current data
          return true;
       }
       else {
@@ -416,39 +411,89 @@ bool List<T>::remove(const T& target, T*& p) {
 // is also the current object
 template <typename T>
 void List<T>::merge(List<T>& firstList, List<T>& secondList) {
-   if(&firstList == this && &secondList == this) {
+   // if the calling object is the same as the two arguments
+   // e.g. company1.intersect(company1, company1);
+   if(this == &firstList && this == &secondList) {
       return;
    }
 
-   if(&firstList != this && &secondList != this) {
+   // make the current list empty and attach the fake head's List
+   if(&firstList != this || &secondList != this) {
       makeEmpty();
    }
-   
+   // declare a fake head pointer which have nodes attached to the end
    Node* fakeHead = nullptr;
-   
-   Node* firstCurrent = firstList.head;
-   Node* secondCurrent = secondList.head;
-   
-   if(firstList.head == nullptr) {
+
+   if(&firstList == &secondList) {
+      fakeHead = firstList.head;
+   }
+   // if the first list is empty assign it to the second
+   else if(firstList.head == nullptr) {
       fakeHead = secondList.head;
    }
+   // if the second list is empty assign it to the first
    else if(secondList.head == nullptr) {
       fakeHead = firstList.head;
    }
+   // find the intersection
    else {
+      // declare walker pointers
+      Node* firstCurrent = firstList.head;
+      Node* secondCurrent = secondList.head;
+      Node* thisCurrent = nullptr;
+      
       // head case
-      if(firstList.head <= secondList.head) {
-         
+      if(*firstCurrent->data <= *secondCurrent->data) {
+         fakeHead = firstCurrent;
+         thisCurrent = fakeHead;
+         firstCurrent = firstCurrent->next;
       }
+      else {
+         fakeHead = secondCurrent;
+         thisCurrent = fakeHead;
+         secondCurrent = secondCurrent->next;
+      }
+      
+      // walk each paraemter list finding which nodes have equal data
+      while(firstCurrent != nullptr && secondCurrent != nullptr) {
+         // if first list's data is less than or equal to second
+         if(*firstCurrent->data <= *secondCurrent->data) {
+            thisCurrent->next = firstCurrent;
+            firstCurrent = firstCurrent->next;
+            thisCurrent = thisCurrent->next;
+         }
+         // if second list's data is less than or equal to second
+         else {
+            thisCurrent->next = secondCurrent;
+            secondCurrent = secondCurrent->next;
+            thisCurrent = thisCurrent->next;
+         }
+      }
+      
+      // if one list is longer than the other
+      if(firstCurrent == nullptr && secondCurrent != nullptr) {
+         thisCurrent->next = secondCurrent;
+      }
+      else if(firstCurrent != nullptr && secondCurrent == nullptr) {
+         thisCurrent->next = firstCurrent;
+      }
+      
+      // clean up pointers
+      firstCurrent = nullptr;
+      secondCurrent = nullptr;
+      thisCurrent = nullptr;
+   
    }
    
+   head = fakeHead;
    
-   // at the end, assign each parameter head to nullptr
-   head = nullptr;
+   // clean up pointers
+   fakeHead = nullptr;
    firstList.head = nullptr;
    secondList.head = nullptr;
 }
-
+*/
+ 
 //----------------------------------------------------------------------------
 // intersect
 // takes two sorted lists and finds the items in common in both lists
@@ -518,100 +563,5 @@ void List<T>::intersect(const List<T>& firstList, const List<T>& secondList) {
    thisCurrent = nullptr;
    
 }
-
-//----------------------------------------------------------------------------
-template <typename T>
-void List<T>::moveToEnd(const T& target) {
-   if(head == nullptr) {
-      return;
-   }
-   
-   // previous will hold the target node if found
-   Node* previous = head;
-   Node* current = head->next;
-   bool found = false;
-   
-   // head case
-   if(*head->data == target) {
-      head = current;
-      previous->next = nullptr;
-   }
-   else {
-      
-      while(current != nullptr) {
-         if(*current->data == target) {
-            previous->next = current>next;
-            previous = current;
-            found = true;
-            break;
-         }
-         else {
-            previous = current;
-            current = current->next;
-         }
-      }
-      
-      if(found) {
-         while(current->next != nullptr) {
-            current = current->next;
-         }
-         current->next = previous;
-      }
-   }
-}
-
-//----------------------------------------------------------------------------
-template <typename T>
-void List<T>::removeEveryOther() {
-   if(isEmpty()) {
-      return;
-   }
-   else {
-      Node* previous = head;
-      Node* current = head->next;
-
-      // head case
-      head = head->next;
-      delete previous->data;
-      previous->data = nullptr;
-      previous->next = nullptr;
-      delete previous;
-      previous = current;
-
-      while(current != nullptr && current->next != nullptr) {
-         current = current->next;
-         previous->next = current->next;
-         previous = current;
-         current = current->next;
-         delete previous->data;
-         
-         previous->data = nullptr;
-         previous->next = nullptr;
-         delete previous;
-         previous = current;
-      }
-   }
-}
-
-//----------------------------------------------------------------------------
-// printBackwards
-template <typename T>
-void List<T>::printBackwards() const {
-   printBackwardsHelper(head);
-}
-//----------------------------------------------------------------------------
-// printBackwardsHelper
-template <typename T>
-void List<T>::printBackwardsHelper(Node* current) const {
-   if(current == nullptr) {
-      return;
-   }
-   
-   printBackwardsHelper(current->next);
-   cout << *current->data;
-}
-
-
-
 
 #endif

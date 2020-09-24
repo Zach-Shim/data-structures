@@ -97,9 +97,12 @@ private:
    bool equalityHelper(const Node*, const Node*) const;
    bool retrieveHelper(const Node*, const T&, T*&) const;
    bool removeHelper(const Node*, const T&, T*&);
-   /* TO DO RECURSIVE HELPERS
+   /*
    void mergeHelper(List<T>&, List<T>&);
    void intersectHelper(const List<T>&, const List<T>&);
+
+   
+   
    void printHelper(Node*) const;
    void removeEveryOtherHelper(Node*) const;
    void moveToEndHelper(Node*) const;
@@ -284,7 +287,7 @@ bool List<T>::equalityHelper(const Node* current, const Node* rightCurrent) cons
    if(!rightCurrent && current) return false;
    else if(rightCurrent && !current) return false;
    else if(!rightCurrent && !current) return true;
-   return (*current == *rightCurrent && equalityHelper(current->next, rightCurrent->next));
+   return (*current->data == *rightCurrent->data && equalityHelper(current->next, rightCurrent->next));
 }
 
 //----------------------------------------------------------------------------
@@ -305,7 +308,7 @@ bool List<T>::retrieve(const T& target, T*& p) const {
       return false;
    }
    
-   retrieveHelper(head, target, p);
+   return retrieveHelper(head, target, p);
 }
  
 //----------------------------------------------------------------------------
@@ -321,7 +324,7 @@ bool List<T>::retrieveHelper(const Node* current, const T& target, T*& p) const 
       p = current->data;
       return true;
    }
-   return retrieveHelper(current, target, p);
+   return retrieveHelper(current->next, target, p);
 }
 
 //----------------------------------------------------------------------------
@@ -342,16 +345,17 @@ bool List<T>::remove(const T& target, T*& p) {
 template <typename T>
 bool List<T>::removeHelper(const Node* current, const T& target, T*& p) {
    if(current == nullptr) {
-      target = nullptr;
+      p = nullptr;
       return false;
    }
    else if(*current->data == target) {
-      target = current->data;
+      p = current->data;
       current = current->next;
       return true;
    }
-   return removeHelper(current, target, p);
+   return removeHelper(current->next, target, p);
 }
+
 //----------------------------------------------------------------------------
 // merge
 // takes 2 sorted lists and merge into one long sorted list
@@ -359,38 +363,89 @@ bool List<T>::removeHelper(const Node* current, const T& target, T*& p) {
 // is also the current object
 template <typename T>
 void List<T>::merge(List<T>& firstList, List<T>& secondList) {
-   if(&firstList == this && &secondList == this) {
+   // if the calling object is the same as the two arguments
+   // e.g. company1.intersect(company1, company1);
+   if(this == &firstList && this == &secondList) {
       return;
    }
 
-   if(&firstList != this && &secondList != this) {
+   // make the current list empty and attach the fake head's List
+   if(&firstList != this || &secondList != this) {
       makeEmpty();
    }
-   
+   // declare a fake head pointer which have nodes attached to the end
    Node* fakeHead = nullptr;
-   
-   Node* firstCurrent = firstList.head;
-   Node* secondCurrent = secondList.head;
-   
-   if(firstList.head == nullptr) {
+
+   if(&firstList == &secondList) {
+      fakeHead = firstList.head;
+   }
+   // if the first list is empty assign it to the second
+   else if(firstList.head == nullptr) {
       fakeHead = secondList.head;
    }
+   // if the second list is empty assign it to the first
    else if(secondList.head == nullptr) {
       fakeHead = firstList.head;
    }
+   // find the intersection
    else {
+      // declare walker pointers
+      Node* firstCurrent = firstList.head;
+      Node* secondCurrent = secondList.head;
+      Node* thisCurrent = nullptr;
+      
       // head case
-      if(firstList.head <= secondList.head) {
-         
+      if(*firstCurrent->data <= *secondCurrent->data) {
+         fakeHead = firstCurrent;
+         thisCurrent = fakeHead;
+         firstCurrent = firstCurrent->next;
       }
+      else {
+         fakeHead = secondCurrent;
+         thisCurrent = fakeHead;
+         secondCurrent = secondCurrent->next;
+      }
+      
+      // walk each paraemter list finding which nodes have equal data
+      while(firstCurrent != nullptr && secondCurrent != nullptr) {
+         // if first list's data is less than or equal to second
+         if(*firstCurrent->data <= *secondCurrent->data) {
+            thisCurrent->next = firstCurrent;
+            firstCurrent = firstCurrent->next;
+            thisCurrent = thisCurrent->next;
+         }
+         // if second list's data is less than or equal to second
+         else {
+            thisCurrent->next = secondCurrent;
+            secondCurrent = secondCurrent->next;
+            thisCurrent = thisCurrent->next;
+         }
+      }
+      
+      // if one list is longer than the other
+      if(firstCurrent == nullptr && secondCurrent != nullptr) {
+         thisCurrent->next = secondCurrent;
+      }
+      else if(firstCurrent != nullptr && secondCurrent == nullptr) {
+         thisCurrent->next = firstCurrent;
+      }
+      
+      // clean up pointers
+      firstCurrent = nullptr;
+      secondCurrent = nullptr;
+      thisCurrent = nullptr;
+   
    }
    
-   // at the end, assign each parameter head to nullptr
-   head = nullptr;
+   head = fakeHead;
+   
+   // clean up pointers
+   fakeHead = nullptr;
    firstList.head = nullptr;
    secondList.head = nullptr;
 }
 
+ 
 //----------------------------------------------------------------------------
 // intersect
 // takes two sorted lists and finds the items in common in both lists
@@ -552,8 +607,5 @@ void List<T>::printBackwardsHelper(Node* current) const {
    printBackwardsHelper(current->next);
    cout << *current->data;
 }
-
-
-
 
 #endif
