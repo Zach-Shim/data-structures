@@ -97,12 +97,9 @@ private:
    bool equalityHelper(const Node*, const Node*) const;
    bool retrieveHelper(const Node*, const T&, T*&) const;
    bool removeHelper(const Node*, const T&, T*&);
-   /*
+   /* TO DO RECURSIVE HELPERS
    void mergeHelper(List<T>&, List<T>&);
    void intersectHelper(const List<T>&, const List<T>&);
-
-   
-   
    void printHelper(Node*) const;
    void removeEveryOtherHelper(Node*) const;
    void moveToEndHelper(Node*) const;
