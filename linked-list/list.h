@@ -314,7 +314,6 @@ bool List<T>::operator!=(const List<T>& right) {
    return !(*this == right);
 }
 
-/*
 //----------------------------------------------------------------------------
 // retrieve
 // retrieves a data object from the linked list
@@ -492,7 +491,6 @@ void List<T>::merge(List<T>& firstList, List<T>& secondList) {
    firstList.head = nullptr;
    secondList.head = nullptr;
 }
-*/
  
 //----------------------------------------------------------------------------
 // intersect
