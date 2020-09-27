@@ -6,8 +6,8 @@ using namespace std;
 const int ARRAYSIZE = 100;
 
 //global function prototypes
-void buildTree(BinTree&, ifstream&);      //
-void initArray(NodeData*[]);              // initialize array to NULL
+void buildTree(BinTree<NodeData>&, ifstream&);     
+void initArray(NodeData*[]);                      // initialize array to NULL
 
 int main() {
    // create file object infile and open it
@@ -33,7 +33,7 @@ int main() {
    NodeData tND("t");
    
    // intialize tree and array
-   BinTree T, T2, T3, dup;
+   BinTree<NodeData> T, T2, T3, dup;
    NodeData* ndArray[ARRAYSIZE];
    initArray(ndArray);
    
@@ -44,10 +44,9 @@ int main() {
    
    buildTree(T, infile);              // builds and displays initial data
    cout << endl;
-   BinTree first(T);                  // test copy constructor
+   BinTree<NodeData> first(T);                  // test copy constructor
    dup = dup = T;                     // test operator=, self-assignment
    
-   T.play
    while (!infile.eof()) {
       cout << "Tree Inorder:" << endl << T;             // operator<< does endl
       T.displaySideways();
@@ -67,15 +66,18 @@ int main() {
       cout << "Retrieve --> blankND:  "
                                     << (found ? "found" : "not found") << endl;
       
-      // test getHeight
-      cout << "Height    --> b:    " << T.getHeight(andND) << endl;
-      cout << "Height    --> and:  " << T.getHeight(andND) << endl;
-      cout << "Height    --> not:  " << T.getHeight(notND) << endl;
-      cout << "Height    --> sss:  " << T.getHeight(sssND) << endl;
-      cout << "Height    --> tttt: " << T.getHeight(ttttND) << endl;
-      cout << "Height    --> ooo:  " <<  T.getHeight(oooND) << endl;
-      cout << "Height    --> y:    " << T.getHeight(yND) << endl;
-      cout << "Height    --> c:  " << T.getHeight(notND) << endl;
+      // test height
+      cout << "The height of T is:    " << T.height() << endl;
+      
+      // test nodeHeight
+      cout << "Height    --> b:    " << T.nodeHeight(bND) << endl;
+      cout << "Height    --> and:  " << T.nodeHeight(andND) << endl;
+      cout << "Height    --> not:  " << T.nodeHeight(notND) << endl;
+      cout << "Height    --> sss:  " << T.nodeHeight(sssND) << endl;
+      cout << "Height    --> tttt: " << T.nodeHeight(ttttND) << endl;
+      cout << "Height    --> ooo:  " <<  T.nodeHeight(oooND) << endl;
+      cout << "Height    --> y:    " << T.nodeHeight(yND) << endl;
+      cout << "Height    --> c:  " << T.nodeHeight(notND) << endl;
 
       // test ==, and !=
       T2 = T;
@@ -119,7 +121,7 @@ int main() {
 // Preconditions:    T is an empty tree
 // Postconditions:   T is has nodes according to the data in the infile stream
 
-void buildTree(BinTree& T, ifstream& infile) {
+void buildTree(BinTree<NodeData>& T, ifstream& infile) {
    string s;
 
    for (;;) {
