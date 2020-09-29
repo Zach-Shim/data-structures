@@ -23,5 +23,5 @@ int main() {
    cout << "Remove 2: " << myHeap << endl << endl;
    
    cout << "Height: " << myHeap.getHeight() << endl;
-   cout << "Top Index: " << myHeap.peekTop() << endl;
+   cout << "Top Index: " << myHeap.peek() << endl;
 }

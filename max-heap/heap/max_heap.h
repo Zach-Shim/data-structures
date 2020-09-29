@@ -27,7 +27,7 @@ public:
    bool remove();
    
    int getHeight() const;
-   ItemType peekTop() const;
+   ItemType peek() const;
 private:
    static const int ROOT_INDEX = 0;
    vector<ItemType> items;
@@ -151,7 +151,7 @@ int MaxHeap<ItemType>::getHeightHelper(int position) const {
    
 //--------------------------------- peekTop -----------------------------------
 template <typename ItemType>
-ItemType MaxHeap<ItemType>::peekTop() const {
+ItemType MaxHeap<ItemType>::peek() const {
    return items[1];
 }
 
